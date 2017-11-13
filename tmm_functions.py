@@ -9,8 +9,6 @@ import spotipy
 from spotipy.oauth2 import SpotifyClientCredentials
 from sklearn.svm import SVC
 
-with open('login.txt') as f: 
-    data = f.readlines()
 class Dataset:
     #classe para formatação e analise de datasets
     
@@ -26,35 +24,14 @@ class Dataset:
             
         self.ans=self.df[self.df.columns[-1]].tolist()
         self.vec=DictVectorizer()
-        self.nb=MultinomialNB()
         self.train_songs=self.vec.fit_transform(self.dict).toarray()
-        self.svc=SVC()
-        
-    def train(self):
-        self.svc.fit(self.train_songs,self.ans)
-        self.nb.fit(self.train_songs,self.ans)
-        return "<R2D2>AS THE TIME PASSES BY, THE MORE I LEARN <R2D2>"
-        
-    def check_score(self,new_songs,clf="nb"):
-        if clf=="svc":
-            return self.svc.score(new_songs.train_songs,new_songs.ans)
-        else:
-            return self.nb.score(new_songs.train_songs,new_songs.ans)
-    
-    
-    def evaluate(self,new_songs,clf="nb"): #cat_number= numero de categorias (ex: muito ruim,ruim,medio,bom,otimo (5) )
-        if clf=="svc":
-            return self.svc.predict(new_songs.train_songs)
-        else:
-            return self.nb.predict(new_songs.train_songs)
-    def savecsv(self,csv_name):
-        self.df.to_csv(csv_name)
-        # if not self.df['study']:
-        #     print("Aviso: Dataframe sem classificação de /Study/ salvo")
-        
-            
 
-class User():
+    def save_csv(self,csv_name):
+        self.df.to_csv(csv_name)
+        
+
+
+class User:
     #classe para facilitar o uso do spotipy
     def __init__(self,client): #a variavel client devera ser uma lista que contem o id do cliente e a senha dele
         self.credentials_manager=SpotifyClientCredentials(client_id=data[0].strip(), client_secret=data[1].strip())
@@ -87,3 +64,68 @@ class User():
         self.playlists[name]=df
         
         return df #retornara o dataframe com as musicas
+
+
+class Trainer():
+    #classe para facilitar o treinamento com o NB e SVC
+    def __init__(self):
+        self.data={}
+        self.nb={}
+        self.svc={}
+        self.results_nb={}
+        self.results_svc={}
+    def add_data(self,genre,data):
+        self.data[genre]=data
+    
+    def train(self,name,dataset):
+        #name=nome da chave do dicionario que sera salvo o treinamento,
+        #dataset=objeto da classe Dataset que recebera o treino
+        nb=MultinomialNB()
+        svc=SVC()
+        self.nb[name]=nb.fit(dataset.train_songs,dataset.ans)
+        self.svc[name]=svc.fit(dataset.train_songs,dataset.ans)
+        return "The new dataset was trained and saved"
+        
+    def check_score(self,name,new_songs):
+        #metodo para checar a eficacia do machine learning
+        print("This is the SVC score: {}".format(self.svc[name].score(new_songs.train_songs,new_songs.ans)))
+
+        print("This is the NB score: {}".format(self.nb[name].score(new_songs.train_songs,new_songs.ans)))
+
+    
+    
+    def evaluate(self,name,new_songs):
+        #metodo para salvar as musicas que a maquina classificou
+        new_songs.df=new_songs.df.reset_index(drop=True)
+        
+        liked_nb=[]
+        disliked_nb=[]
+        
+        liked_svc=[]
+        disliked_svc=[]
+        
+        nb_res=self.nb[name].predict(new_songs.train_songs)
+        svc_res=self.svc[name].predict(new_songs.train_songs)
+        
+        for i in range(len(nb_res)):
+            if nb_res[i] == 0:
+                
+                disliked_nb.append(new_songs.df['song_title'][i]+' : '+new_songs.df['artist'][i])
+            else:
+                
+                liked_nb.append(new_songs.df['song_title'][i]+' : '+new_songs.df['artist'][i])
+            if svc_res[i] == 0:
+                
+                disliked_svc.append(new_songs.df['song_title'][i]+' : '+new_songs.df['artist'][i])
+            else:
+                liked_svc.append(new_songs.df['song_title'][i]+' : '+new_songs.df['artist'][i])
+                
+
+        self.results_nb[name]={'liked':liked_nb,'disliked':disliked_nb}
+        self.results_svc[name]={'liked':liked_svc,'disliked':disliked_svc}
+        
+
+        
+        return "The result of the evaluation is now saved"
+
+        
