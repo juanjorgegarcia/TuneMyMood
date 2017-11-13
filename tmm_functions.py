@@ -48,7 +48,7 @@ class Dataset:
         else:
             return self.nb.predict(new_songs.train_songs)
     def savecsv(self,csv_name):
-        self.df.to_csv(csv_name)
+        self.df.to_csv(csv_name,encoding='utf-8')
         # if not self.df['study']:
         #     print("Aviso: Dataframe sem classificação de /Study/ salvo")
         
