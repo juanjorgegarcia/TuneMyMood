@@ -16,11 +16,13 @@ class Dataset:
         if type(df2)==str:
             self.df=pd.read_csv(df2)
             self.df["loudness"]=abs(self.df["loudness"])
-            self.dict=self.df.iloc[:,1:14].to_dict('records')
+            self.dict=self.df.filter(items=['acousticness','danceability','instrumentalness','key','liveness','loudness','mode'
+                      ,'speechiness','tempo','time_signature','valence']).to_dict('records')
         else:   
             self.df=df2
             self.df["loudness"]=abs(self.df["loudness"])
-            self.dict=self.df.iloc[:,[0,2,3,4,6,7,8,9,10,11,12,13]].to_dict('records')
+            self.dict=self.df.filter(items=['acousticness','danceability','instrumentalness','key','liveness','loudness','mode'
+                      ,'speechiness','tempo','time_signature','valence']).to_dict('records')
             
         self.ans=self.df[self.df.columns[-1]].tolist()
         self.vec=DictVectorizer()
@@ -33,7 +35,7 @@ class Dataset:
 
 class User:
     #classe para facilitar o uso do spotipy
-    def __init__(self,client): #a variavel client devera ser uma lista que contem o id do cliente e a senha dele
+    def __init__(self,data): #a variavel client devera ser uma lista que contem o id do cliente e a senha dele
         self.credentials_manager=SpotifyClientCredentials(client_id=data[0].strip(), client_secret=data[1].strip())
         self.sp=spotipy.Spotify(client_credentials_manager=self.credentials_manager)
         self.sp.trace=False
@@ -74,23 +76,33 @@ class Trainer():
         self.svc={}
         self.results_nb={}
         self.results_svc={}
+
     def add_data(self,genre,data):
         self.data[genre]=data
     
-    def train(self,name,dataset):
+    def train(self,name,dataset,genre="ans"):
         #name=nome da chave do dicionario que sera salvo o treinamento,
         #dataset=objeto da classe Dataset que recebera o treino
         nb=MultinomialNB()
         svc=SVC()
-        self.nb[name]=nb.fit(dataset.train_songs,dataset.ans)
-        self.svc[name]=svc.fit(dataset.train_songs,dataset.ans)
+        if genre=="ans":
+            self.nb[name]=nb.fit(dataset.train_songs,dataset.ans)
+            self.svc[name]=svc.fit(dataset.train_songs,dataset.ans)
+        else:
+            self.nb[name]=nb.fit(dataset.train_songs,dataset.df[genre].tolist())
+            self.svc[name]=svc.fit(dataset.train_songs,dataset.df[genre].tolist())
         return "The new dataset was trained and saved"
         
-    def check_score(self,name,new_songs):
+    def check_score(self,name,new_songs,genre="ans"):
         #metodo para checar a eficacia do machine learning
-        print("This is the SVC score: {}".format(self.svc[name].score(new_songs.train_songs,new_songs.ans)))
+        if genre=="ans":
+            print("This is the SVC score: {}".format(self.svc[name].score(new_songs.train_songs,new_songs.ans)))
 
-        print("This is the NB score: {}".format(self.nb[name].score(new_songs.train_songs,new_songs.ans)))
+            print("This is the NB score: {}".format(self.nb[name].score(new_songs.train_songs,new_songs.ans)))
+        else:
+            print("This is the SVC score: {}".format(self.svc[name].score(new_songs.train_songs,new_songs.df[genre].tolist())))
+
+            print("This is the NB score: {}".format(self.nb[name].score(new_songs.train_songs,new_songs.df[genre].tolist())))
 
     
     
