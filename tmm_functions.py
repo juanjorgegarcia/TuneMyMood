@@ -83,7 +83,8 @@ class Trainer():
         self.data[genre]=data
 
     def pre_format(self,genre,data,not_data):
-        not_data.df['genre']=0
+        data.df[genre]=1
+        not_data.df[genre]=0
         dada_concat=Dataset(pd.concat([data.df,not_data.df]))
         return dada_concat
     
