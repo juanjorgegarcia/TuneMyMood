@@ -151,4 +151,36 @@ class Trainer():
         
         return "The result of the evaluation is now saved"
 
+def list_download(listi,listy_g,genre,datavalue):
+    df_all = client.playlist_downloader(listi[0][0],listi[0][1],listi[0][2])
+    print(1)
+    df_list = []
+    for i in range(1,len(listi)):
+        df =client.playlist_downloader(listi[i][0],listi[i][1],listi[i][2])
+        df_all = pd.concat([df_all,df])
+        print(i+1)
+    for i in range(len(listy_g)):
+        df_all[listy_g[i]] = 0
+    if datavalue == 1:
+        df_all[genre] = datavalue
+    print("SO DONE")
+    return df_all
+
+def list_download_blank(listi):
+    df_all = client.playlist_downloader(listi[0][0],listi[0][1],listi[0][2])
+    print(1)
+    df_list = []
+    for i in range(1,len(listi)):
+        df =client.playlist_downloader(listi[i][0],listi[i][1],listi[i][2])
+        df_all = pd.concat([df_all,df])
+        print(i+1)
+    print("SO DONE")
+    return df_all
         
+def lister(listaurl):
+    liste = []
+    for i in range(len(listaurl)):
+        a = re.split(r"/", listaurl[0])
+        temp = [a[5]+str(i+1),a[4],a[6]]
+        liste.append(temp)
+    return liste
