@@ -152,6 +152,40 @@ class Trainer():
         
         return "The result of the evaluation is now saved"
 
+    def test_this(self,name,genre):
+        #name=nome que sera salvo o treinamento 
+        #genre=o genero que sera treinado
+        genre_2=genre
+        genre_list=['funk','rock','eletronica','metal','sertanejo','rap']
+
+        genre_name=genre+'_df.csv'
+        genre=Dataset(genre_name)
+        not_genre_name='not_'+genre_name
+        not_genre=Dataset(not_genre_name)
+        genre_all=self.pre_format(genre,genre,not_genre)
+
+        self.train(name,genre_all,genre)
+        test_name_df='test_'+genre_name
+        test_genre_df=Dataset(test_name_df)
+        x=[]
+        for i in range(len(genre_list)):
+            if genre_list[i]!=genre_2:
+                x.append(genre_list[i])
+        random_genre=np.random.choice(x)
+
+        #print(random_genre)
+        test_not_name_df='test_'+random_genre+'_df.csv'
+        test_genre_not_df=Dataset(test_not_name_df)
+
+        test_genre_all=self.pre_format(genre,test_genre_df,test_genre_not_df)
+
+        self.check_score(name,test_genre_all,genre)
+        self.evaluate(name,test_genre_all)
+
+
+
+
+
 def list_download(listi,listy_g,genre,datavalue):
     df_all = client.playlist_downloader(listi[0][0],listi[0][1],listi[0][2])
     print(1)
