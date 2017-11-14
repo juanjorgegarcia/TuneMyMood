@@ -17,12 +17,12 @@ class Dataset:
             self.df=pd.read_csv(df2)
             self.df["loudness"]=abs(self.df["loudness"])
             self.dict=self.df.filter(items=['acousticness','danceability','instrumentalness','key','liveness','loudness','mode'
-                      ,'speechiness','tempo','time_signature','valence']).to_dict('records')
+                      ,'speechiness','tempo','time_signature','valence','artist']).to_dict('records')
         else:   
             self.df=df2
             self.df["loudness"]=abs(self.df["loudness"])
             self.dict=self.df.filter(items=['acousticness','danceability','instrumentalness','key','liveness','loudness','mode'
-                      ,'speechiness','tempo','time_signature','valence']).to_dict('records')
+                      ,'speechiness','tempo','time_signature','valence','artist']).to_dict('records')
             
         self.ans=self.df[self.df.columns[-1]].tolist()
         self.vec=DictVectorizer()
@@ -76,11 +76,20 @@ class Trainer():
         self.svc={}
         self.results_nb={}
         self.results_svc={}
+        self.vc={}
+        
 
     def add_data(self,genre,data):
         self.data[genre]=data
+
+    def pre_format(self,genre,data,not_data):
+        not_data.df['genre']=0
+        dada_concat=Dataset(pd.concat([data.df,not_data.df]))
+        return dada_concat
     
     def train(self,name,dataset,genre="ans"):
+        self.vc[name]=DictVectorizer()
+        dataset.train_songs=self.vc[name].fit_transform(dataset.dict).toarray()
         #name=nome da chave do dicionario que sera salvo o treinamento,
         #dataset=objeto da classe Dataset que recebera o treino
         nb=MultinomialNB()
@@ -95,6 +104,7 @@ class Trainer():
         
     def check_score(self,name,new_songs,genre="ans"):
         #metodo para checar a eficacia do machine learning
+        new_songs.train_songs=self.vc[name].transform(new_songs.dict).toarray()
         if genre=="ans":
             print("This is the SVC score: {}".format(self.svc[name].score(new_songs.train_songs,new_songs.ans)))
 
@@ -109,7 +119,8 @@ class Trainer():
     def evaluate(self,name,new_songs):
         #metodo para salvar as musicas que a maquina classificou
         new_songs.df=new_songs.df.reset_index(drop=True)
-        
+        new_songs.train_songs=self.vc[name].transform(new_songs.dict).toarray()
+
         liked_nb=[]
         disliked_nb=[]
         
