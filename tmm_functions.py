@@ -102,7 +102,16 @@ class Trainer():
             self.nb[name]=nb.fit(dataset.train_songs,dataset.df[genre].tolist())
             self.svc[name]=svc.fit(dataset.train_songs,dataset.df[genre].tolist())
         return "The new dataset was trained and saved"
-        
+    def multi_train(self,name,dataset):
+        self.vc[name]=DictVectorizer()
+        dataset.train_songs=self.vc[name].fit_transform(dataset.dict).toarray()
+        nb=MultinomialNB()
+        svc=SVC()
+        self.nb[name]=nb.fit(dataset.train_songs,dataset.df["genre"].tolist())
+        self.svc[name]=svc.fit(dataset.train_songs,dataset.df["genre"].tolist())
+        return "Blablabla"
+
+
     def check_score(self,name,new_songs,genre="ans"):
         #metodo para checar a eficacia do machine learning
         new_songs.train_songs=self.vc[name].transform(new_songs.dict).toarray()
@@ -151,7 +160,6 @@ class Trainer():
 
         
         return "The result of the evaluation is now saved"
-
     def test_this(self,name,genre):
         #name=nome que sera salvo o treinamento 
         #genre=o genero que sera treinado
