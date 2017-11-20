@@ -2,12 +2,15 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
 import os
+import re
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.feature_extraction import DictVectorizer
 vec=DictVectorizer()
 import spotipy 
 from spotipy.oauth2 import SpotifyClientCredentials
 from sklearn.svm import SVC
+
+
 
 class Dataset:
     #classe para formatação e analise de datasets
@@ -102,6 +105,7 @@ class Trainer():
             self.nb[name]=nb.fit(dataset.train_songs,dataset.df[genre].tolist())
             self.svc[name]=svc.fit(dataset.train_songs,dataset.df[genre].tolist())
         return "The new dataset was trained and saved"
+    
     def multi_train(self,name,dataset):
         self.vc[name]=DictVectorizer()
         dataset.train_songs=self.vc[name].fit_transform(dataset.dict).toarray()
@@ -190,6 +194,42 @@ class Trainer():
         self.check_score(name,test_genre_all,genre)
         self.evaluate(name,test_genre_all)
 
+    def multidf(self,name,genre):
+        #name=nome que sera salvo o treinamento 
+        #genre=o genero que sera treinado
+        genre_2=genre
+        genre_list=['funk','rock','eletronica','metal','sertanejo','rap']
+
+        genre_name=genre+'_df.csv'
+        genre=Dataset(genre_name)
+        frames = []
+        for i in range(len(genre_list)):
+            not_genre_name = 'not_'+ genre_list[i]
+            not_genre=Dataset(not_genre_name)
+            frames.append(not_genre)
+        not_genre = pd.concat(frames)
+
+        genre_all=self.pre_format(genre,genre,not_genre)
+
+        self.multitrain(name,genre_all)
+        #  self.svc[name]
+        test_name_df='test_'+genre_name
+        test_genre_df=Dataset(test_name_df)
+        x=[]
+        for i in range(len(genre_list)):
+            if genre_list[i]!=genre_2:
+                x.append(genre_list[i])
+        random_genre=np.random.choice(x)
+
+        #print(random_genre)
+        test_not_name_df='test_'+random_genre+'_df.csv'
+        test_genre_not_df=Dataset(test_not_name_df)
+
+        test_genre_all=self.pre_format(genre,test_genre_df,test_genre_not_df)
+
+        self.check_score(name,test_genre_all,genre)
+        self.evaluate(name,test_genre_all)
+
 
 
 
@@ -223,7 +263,10 @@ def list_download_blank(listi):
 def lister(listaurl):
     liste = []
     for i in range(len(listaurl)):
-        a = re.split(r"/", listaurl[0])
+        a = re.split(r"/", listaurl[i])
         temp = [a[5]+str(i+1),a[4],a[6]]
         liste.append(temp)
     return liste
+with open("login.txt") as f: #Abrindo o login.txt que contem na 1a linha Client_user e na segunda a Client_secre
+    data = f.readlines()
+client=User(data)
