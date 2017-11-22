@@ -110,8 +110,11 @@ def getToken():
 @app.route("/playlist",methods=['GET'])
 def getPlaylist():
     genero = request.args.get('genero')
+    genero = genero.lower()
     moods = request.args.get('moods')
+    moods = moods.lower()
     name = request.args.get('name')
+    name = name.lower()
     print('OBTAINED PARAMETERS',genero,moods)
     token = getToken()
 
