@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <script
+        src="https://code.jquery.com/jquery-3.2.1.min.js"
+        integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
+        crossorigin="anonymous">
+    </script>
+    <script  type="text/javascript" src="main.js"></script>
+    <title>Document</title>
+</head>
+<body>
+    eae galera
+    <h2 id='playlists'> Segue playlists : </h2>
+
+    <!-- <script> 
+        var requestPlaylist = function(){
+            const params = { generos : 'rock,gospel' ,moods:'gym,focus'}
+            const urlParams = new URLSearchParams(Object.entries(params));
+            fetch('http://localhost:5000/playlist?' + urlParams).then((res) => {
+                res.json().then((data) => {
+                    console.log(data)
+                })
+                })
+            }
+    </script> -->
+    
+
+    <form id='forms' onsubmit="onSubmit()">
+        Genre:<br>
+        <input type="text" name="genre" value="rock">
+        <br>
+        Mood:<br>
+        <input type="text" name="mood" value="gym">
+        <br><br>
+        <input type="submit" value="Submit">
+    </form> 
+
+
+    <script>
+        function onSubmit(){
+            // const params = {... generos : 'rock,gospel' ,moods:'gym,focus'}
+            // const urlParams = new URLSearchParams(Object.entries(params));
+            let urlParams = $("#forms").serialize()
+            fetch('http://localhost:5000/playlist?' + urlParams).then((res) => {
+                res.json().then((data) => {
+                    console.log(data)
+                })
+            })
+
+
+        }
+
+
+    </script>
+</body>
+</html>
