@@ -110,7 +110,8 @@ def getToken():
 @app.route("/playlist",methods=['GET'])
 def getPlaylist():
     genero = request.args.get('genero')
-    genero = genero.lower()
+    print((genero))
+    genero = genero.lower().split(',')
     moods = request.args.get('moods')
     moods = moods.lower()
     name = request.args.get('name')
@@ -118,30 +119,43 @@ def getPlaylist():
     print('OBTAINED PARAMETERS',genero,moods)
     token = getToken()
 
-    # # try:
-    client = User(data,token=token)
-    client.sp.user_playlist_create(user=12144879613,name=name,public=True)
-    ash=Trainer()
+    try:
+        client = User(data,token=token)
+        client.sp.user_playlist_create(user=12144879613,name=name,public=True)
+        ash=Trainer()
+        classified_musics=pd.DataFrame()
+        for i in genero:
+            alo=ash.playlist_maker(i,moods)
+            classified_musics=pd.concat([classified_musics,ash.playlist_maker(i,moods)])
+            print(len(alo))
+        print(len(classified_musics))
+        oi=client.sp.user_playlist(user=12144879613, playlist_id=None, fields=None)
 
-    classified_musics=ash.playlist_maker(genero,moods)
-    oi=client.sp.user_playlist(user=12144879613, playlist_id=None, fields=None)
+        authorization_header = {"Authorization":"Bearer {}".format(token)}
+        playlist_api_endpoint = "https://api.spotify.com/v1/me/playlists"
+        playlists_response = requests.get(url=playlist_api_endpoint,params=None,headers=authorization_header)
+        playlist_data = json.loads(playlists_response.text)
 
-    authorization_header = {"Authorization":"Bearer {}".format(token)}
-    playlist_api_endpoint = "https://api.spotify.com/v1/me/playlists"
-    playlists_response = requests.get(url=playlist_api_endpoint,params=None,headers=authorization_header)
-    playlist_data = json.loads(playlists_response.text)
+        #print(playlist_data,type(playlist_data))
+        for i in playlist_data['items']:
+            if i['name']==name:
+                id=i['id']
+                uri=i['uri']
+        musics_ids_list=classified_musics['id'].tolist()
+        
+        n=len(classified_musics)//100
+        for i in range(n):
+            client.sp.user_playlist_add_tracks(user=12144879613, playlist_id=id, tracks=musics_ids_list[i*100:i*100+100], position=None)
+        if ((len(classified_musics))%100) > 0:
+            client.sp.user_playlist_add_tracks(user=12144879613, playlist_id=id, tracks=musics_ids_list[100*n:len(classified_musics)], position=None)
+        
+        res = {}
+        res['status'] = "SUCCESS"
+        res['uri'] = uri
+    except:
+        res = {}
+        res['status'] = 'FAILURE'
 
-    print(playlist_data,type(playlist_data))
-    for i in playlist_data['items']:
-        if i['name']==name:
-            id=i['id']
-            uri=i['uri']
-    musics_ids_list=classified_musics['id'].tolist()
-    client.sp.user_playlist_add_tracks(user=12144879613, playlist_id=id, tracks=musics_ids_list, position=None)
-    
-    res = {}
-    res['status'] = "SUCCESS"
-    res['uri'] = uri
 
     return jsonify(res)
 
