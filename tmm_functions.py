@@ -193,12 +193,7 @@ class Trainer():
             self.evaluate(name,test_genre_all)
             
         def playlist_maker(self,genre,mood):
-            df_yes = pd.read_csv(genre+'_df.csv')
-            df_yes[genre]=1
-            df_no = pd.read_csv('not_'+genre+'_df.csv')
-            df_np[genre]=0
-            genre_dataset =Dataset(pd.concat([df_yes,df_no]))
-
+            genre_dataset =Dataset(pd.concat([pd.read_csv(genre+'_df.csv'),pd.read_csv('not_'+genre+'_df.csv')]))
             self.train(genre,genre_dataset,genre,threshold=[0.8,0.2])
             mega_dataset = Dataset(pd.read_csv("giant_df.csv"))
             self.evaluate(genre,mega_dataset)
