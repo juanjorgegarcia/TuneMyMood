@@ -127,7 +127,6 @@ def getPlaylist():
         for i in genero:
             alo=ash.playlist_maker(i,moods)
             classified_musics=pd.concat([classified_musics,ash.playlist_maker(i,moods)])
-            print(len(alo))
         print(len(classified_musics))
         oi=client.sp.user_playlist(user=12144879613, playlist_id=None, fields=None)
 
