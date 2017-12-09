@@ -32,7 +32,7 @@ class Dataset:
         self.train_songs=self.vec.fit_transform(self.dict).toarray()
 
     def save_csv(self,csv_name):
-        self.df.to_csv(csv_name, encoding="utf-8")
+        self.df.to_csv(csv_name)
         
 
 
@@ -284,3 +284,6 @@ def lister(listaurl):
         temp = [a[5]+str(i+1),a[4],a[6]]
         liste.append(temp)
     return liste
+with open("login.txt") as f: #Abrindo o login.txt que contem na 1a linha Client_user e na segunda a Client_secre
+    data = f.readlines()
+client=User(data)
